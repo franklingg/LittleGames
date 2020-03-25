@@ -29,3 +29,4 @@ class Cards(Deck):
     def retrieve(self):
         for card in self.set:
             Deck.deck_cards.append(card)
+

@@ -1,4 +1,3 @@
-
 from blackjack_tools import deck_setup
 
 
@@ -24,41 +23,26 @@ def create_hand():
 
 
 # put the cards back in the deck
-def reshuffle_cards(hand1, hand2, hand3):
-    if hand3 == '':
-        for hand in [hand1, hand2]:
-            hand.retrieve()
-    else:
-        for hand in [hand1, hand2, hand3]:
-            hand.retrieve()
+def reshuffle_cards(dealer_hand, player_hand):
+    for hand in [dealer_hand, player_hand]:
+        hand.retrieve()
 
 
 # show all current cards
-def show_cards(hand1, name1, hand2, name2, hand3, hidden_card=1):
-    print(f"{name1}'s hand: ", end='')
-    for i in range(len(hand1.set)):
-        if i == hidden_card:
+def show_cards(dealer_hand, dealer, player_hand, player, hidden_card=True):
+    print(f"{dealer}'s hand: ", end='')
+    for i in range(len(dealer_hand.set)):
+        if hidden_card and i == 1:
             print(f"|?| ", end='')
             continue
-        print(f"|{hand1.set[i]}| ", end='')
-    print(f"\n{name2}'s hand: ", end='')
-    for i in range(len(hand2.set)): print(f"|{hand2.set[i]}| ", end='')
-    if hand3 != '':
-        print(f"\n{name2}'s 2nd hand: ", end='')
-        for i in range(len(hand2.set)): print(f"|{hand2.set[i]}| ", end='')
+        print(f"|{dealer_hand.set[i]}| ", end='')
+    print(f"\n{player}'s hand: ", end='')
+    for i in range(len(player_hand.set)): print(f"|{player_hand.set[i]}| ", end='')
 
 
 # show options
-def choosing(play, hand):
-    if play == 1 and (hand.set[0] == hand.set[1]):
-        choice = corrected_input("\nQual sua próxima ação?\n"
-                                 "(1) Hit (Pegar uma carta)\n"
-                                 "(2) Stand (Manter as cartas)\n"
-                                 "(3) Surrender (Desistir e recuperar 50% da aposta)\n"
-                                 "(4) Double (Dobrar a aposta e pegar SOMENTE mais uma carta)\n"
-                                 "(5) Split (Dividir em duas apostas independentes)\n"
-                                 "Sua escolha: ", 1, 5)
-    elif play == 1:
+def choosing(turn):
+    if turn == 1:
         choice = corrected_input("\nQual sua próxima ação?\n"
                                  "(1) Hit (Pegar uma carta)\n"
                                  "(2) Stand (Manter as cartas)\n"
@@ -91,90 +75,79 @@ def calculate_points(hand):
     return points
 
 
+# check who won (if no one busted)
+def win_check(dealer_hand, player_hand, dealer, player, balance, bet, multiply=1):
+    dealer_score = calculate_points(dealer_hand)
+    player_score = calculate_points(player_hand)
+    if dealer_score > player_score:
+        print(f"####### {dealer} venceu. Aposta perdida!  #########")
+        return balance
+    elif dealer_score == player_score:
+        balance += multiply * bet / 2
+        print(f"####### Empate! R$ {multiply * bet / 2} recuperado ########")
+        return balance
+    else:
+        balance += 2 * bet * multiply
+        print(f"####### {player} venceu! Ganhou R$ {2 * bet * multiply}!  #########")
+        return balance
+
+
 # check if you've busted
-def bust_check(score):
-    if score > 21:
+def bust_check(hand, name):
+    if calculate_points(hand) > 21:
+        print(f"####### {name} estourou! #######")
         return True
     else:
         return False
 
 
 # automatic dealer
-def dealer_hit(hand):
-    score = calculate_points(hand)
+def dealer_play(dealer_hand, dealer, balance, bet, multiply=1):
+    score = calculate_points(dealer_hand)
+    dealer_bust = False
     if score <= 15:
-        return True
-    else:
-        return False
+        dealer_hand.hit()
+        dealer_bust = bust_check(dealer_hand, dealer)
+        if dealer_bust:
+            balance += bet * 2 * multiply
+    return dealer_hand, balance, dealer_bust
 
 
 # Where the game happens
-def round_menu(play, hand1, hand2, withdraw, cash, name1, name2):
-    choice = choosing(play, hand2)
+def round_menu(turn, dealer_hand, player_hand, bet, balance, dealer, player):
+    dealer_bust = False
+    choice = choosing(turn)
     if choice == 1:
-        hand2.hit()
-        player_score = calculate_points(hand2)
-        if bust_check(player_score):
-            print("\n##########  Estourou! Aposta perdida  ############")
-        else:
-            if dealer_hit(hand1):
-                hand1.hit()
-                dealer_score = calculate_points(hand1)
-                if bust_check(dealer_score):
-                    print(f"\n####### {name1} Estourou! Você ganhou!!  #########")
-                    cash += withdraw * 2
-                    return True, False, hand1, hand2, cash
-        return bust_check(player_score), False, hand1, hand2, cash
+        player_hand.hit()
+        player_bust = bust_check(player_hand, player)
+        if not player_bust:
+            dealer_hand, balance, dealer_bust = dealer_play(dealer_hand, dealer, balance, bet)
+        return (player_bust or dealer_bust), dealer_hand, player_hand, balance
+
     elif choice == 2:
-        dealer_score = calculate_points(hand1)
-        if dealer_hit(hand1):
-            hand1.hit()
-            dealer_score = calculate_points(hand1)
-            if bust_check(dealer_score):
-                print(f"\n####### {name1} Estourou! Você ganhou!!  #########")
-                cash += withdraw * 2
-                return True, False, hand1, hand2, cash
-            return False, False, hand1, hand2, cash
-        player_score = calculate_points(hand2)
-        if dealer_score > player_score:
-            print(f"####### {name1} venceu. Aposta perdida!  #########")
-        elif dealer_score == player_score:
-            cash += withdraw / 2
-            print(f"####### Empate! R$ {withdraw / 2} recuperado ########")
-        else:
-            cash += 2 * withdraw
-            print(f"####### {name2} venceu! Ganhou R$ {2 * withdraw}!  #########")
-        return True, False, hand1, hand2, cash
+        dealer_hand, balance, dealer_bust = dealer_play(dealer_hand, dealer, balance, bet)
+        if bust_check(dealer_hand, dealer):
+            return True, dealer_hand, player_hand, balance
+        balance = win_check(dealer_hand, player_hand, dealer, player, balance, bet)
+        return True, dealer_hand, player_hand, balance
 
     elif choice == 3:
-        cash += withdraw / 2
-        print(f"\n######## Desistiu! Recuperou R$ {withdraw / 2}!  ##########")
-        return True, False, hand1, hand2, cash
-    elif choice == 4:
-        cash -= withdraw
-        hand2.hit()
-        player_score = calculate_points(hand2)
-        if bust_check(player_score):
-            print("\n##########  Estourou! Aposta perdida  ############")
-            return True, False, hand1, hand2, cash
-        dealer_score = calculate_points(hand1)
-        if dealer_hit(hand1):
-            hand1.hit()
-            dealer_score = calculate_points(hand1)
-            if bust_check(dealer_score):
-                print(f"\n####### {name1} Estourou! Você ganhou!!  #########")
-                cash += withdraw * 2
-                return True, False, hand1, hand2, cash
-        if dealer_score > player_score:
-            print(f"####### {name1} venceu. Aposta perdida!  #########")
-        elif dealer_score == player_score:
-            cash += withdraw / 2
-            print(f"####### Empate! R$ {withdraw} recuperado ########")
-        else:
-            cash += 4 * withdraw
-            print(f"####### {name2} venceu! Ganhou R$ {4 * withdraw}!  #########")
-        return True, False, hand1, hand2, cash
+        balance += bet / 2
+        print(f"\n######## Desistiu! Recuperou R$ {bet / 2}!  ##########")
+        return True, dealer_hand, player_hand, balance
+
     else:
-        return False, True, hand1, hand2, cash
+        if balance < bet:
+            print(f"\n####### Saldo insuficiente para dobrar! R$ {balance} restante. ########")
+            return False, dealer_hand, player_hand, balance
+        balance -= bet
+        player_hand.hit()
+        if bust_check(player_hand, player):
+            return True, dealer_hand, player_hand, balance
 
+        dealer_hand, balance, dealer_bust = dealer_play(dealer_hand, dealer, balance, bet, 2)
+        if dealer_bust:
+            return True, dealer_hand, player_hand, balance
 
+        balance = win_check(dealer_hand, player_hand, dealer, player, balance, bet, 2)
+        return True, dealer_hand, player_hand, balance
