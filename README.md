@@ -1,5 +1,5 @@
 # LittleGames
-<<<<<<< HEAD
+
 Games I've been writing while learning programming
 =======
 Games I've been coding while I learn programming
@@ -17,4 +17,3 @@ In this epic adventure Gjafar, our hero, is on a epic mission for the Æsir gods
 - [ ] Game progress
 
 ...
->>>>>>> 9a242eedd4778f420578d8eaea9e832ed8dbdcc3
