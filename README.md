@@ -4,7 +4,7 @@ Games I've been coding while I learn programming
 ## TicTacToe
 A nostalgic Tic Tac Toe game made with Pygame. Not only a simple game, it has a good soundtrack (it may be a little annoying if you play too much)
 
-
+![image](https://user-images.githubusercontent.com/61962950/96192192-e5457480-0f1b-11eb-9f88-71706133ae3b.png)
 
 
 ## Jôtun's Path 
