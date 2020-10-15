@@ -1,2 +1,2 @@
 # LittleGames
-Games I've been coding while I learn programming
+Games I've been writing while learning programming
