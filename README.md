@@ -1,7 +1,4 @@
 # LittleGames
-
-Games I've been writing while learning programming
-=======
 Games I've been coding while I learn programming
 
 ## Jôtun's Path 
