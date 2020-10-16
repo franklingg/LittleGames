@@ -4,6 +4,7 @@ from Content import Path
 
 class Color(object):
     black = (0,0,0)
+    light_black = (50, 51, 51)
     light_grey = (153, 150, 165)
     pearl = (208,240,192)
     sky_blue = (93, 142, 193)
