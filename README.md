@@ -10,6 +10,8 @@ A nostalgic Tic Tac Toe game made with Pygame. It is a simple game, but has a go
 ## Jôtun's Path 
 In this epic adventure Gjafar, our hero, is on a epic mission for the Æsir gods. He is crossing whole Jôtunheim (Norse World of the Giants), facing scary enemies with his loyal friend, Bloodborne, a sword.
 
+![image](https://user-images.githubusercontent.com/61962950/96200889-8559c880-0f31-11eb-80fd-28b6443e5e89.png)
+
 ### Game progress:
 - [x] Game Background
 - [X] Start Screen
