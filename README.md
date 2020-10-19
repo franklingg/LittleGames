@@ -19,8 +19,8 @@ In this epic adventure Gjafar, our hero, is on a epic mission for the Æsir gods
 - [X] Start Screen
 - [X] First Screen and Character Placement
 - [X] Character Movement and attack
-- [ ] Proper physics
-- [ ] Map Rendering
+- [x] Proper physics
+- [x] Map Rendering
 - [ ] Character + Map Interactions
 - [ ] Enemies rendering
 - [ ] Player + enemies interactions
