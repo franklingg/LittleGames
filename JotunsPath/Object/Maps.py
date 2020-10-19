@@ -11,11 +11,17 @@ class LevelOne(pygame.sprite.Sprite):
         self.rect = self.image.get_rect()
         self.rect.x, self.rect.y = 0, 0
 
-        self.objects = pygame.sprite.Group()
-        soil = self.object(pygame.Rect(0, 440, 800, 160))
-        left_edge = self.object(pygame.Rect(0, 0, 3, 600))
-        right_edge = self.object(pygame.Rect(797, 0, 3, 600))
-        self.objects.add(soil, left_edge, right_edge)
+        self.walls = pygame.sprite.Group()
+        self.grounds = pygame.sprite.Group()
+        soil = self.object(pygame.Rect(0, 515, 800, 80))
+        left_edge = self.object(pygame.Rect(0, 0, 0, 600))
+        right_edge = self.object(pygame.Rect(800, 0, 0, 600))
+        self.walls.add(left_edge, right_edge)
+        self.grounds.add(soil)
+
+        # level attributes: size and cursor
+        self.x = 800
+        self.cursor = 0
 
     def object(self, rect):
         object = pygame.sprite.Sprite()

@@ -44,16 +44,23 @@ def level_one():
 
 
 def char_idle():
-    return pygame.image.load(Path.char_idle)
+    return (pygame.image.load(Path.char_idle), 4)
 
 
 def char_run():
-    return pygame.image.load(Path.char_run)
+    return (pygame.image.load(Path.char_run), 6)
 
 
 def char_attack():
-    return pygame.image.load(Path.char_attack)
+    return (pygame.image.load(Path.char_attack), 6)
+
+
+def char_airattack():
+    return (pygame.image.load(Path.char_airattack), 7)
 
 
 def char_jump():
-    return pygame.image.load(Path.char_jump)
+    return (pygame.image.load(Path.char_jump), 2)
+
+def char_crouch():
+    return (pygame.image.load(Path.char_crouch), 4)

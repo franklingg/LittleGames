@@ -16,7 +16,7 @@ class GameInstance(object):
         self.home_screen()
 
         self.maps = pygame.sprite.Group(Maps.LevelOne())
-        self.adventurer = Character((50, 440), self.maps.sprites()[0])
+        self.adventurer = Character(self.maps.sprites()[0])
         self.game()
 
     def create_button(self, img, pos):
@@ -50,49 +50,72 @@ class GameInstance(object):
             pygame.display.update()
 
     def player_action(self):
-        if pygame.key.get_pressed()[pygame.K_LEFT] or pygame.key.get_pressed()[pygame.K_a]:
-            if pygame.key.get_pressed()[pygame.K_SPACE]:
-                for i in range(6):
-                    self.clock.tick(15)
-                    self.adventurer.attack()
-                    self.update_game()
-            elif pygame.key.get_pressed()[pygame.K_UP] and not self.jumping:
-                self.adventurer.y -= 1
-                self.jumping = True
-            elif self.jumping:
-                self.jumping = self.adventurer.jump("LEFT")
+        if pygame.key.get_pressed()[pygame.K_UP] and not self.adventurer.inair:
+            self.adventurer.jump()
+
+        elif pygame.key.get_pressed()[pygame.K_DOWN] or pygame.key.get_pressed()[pygame.K_s] \
+                and not self.adventurer.inair:
+            self.clock.tick(10)
+            self.adventurer.crouch()
+            self.update_game()
+
+        elif pygame.key.get_pressed()[pygame.K_LEFT] or pygame.key.get_pressed()[pygame.K_a]:
+            if self.adventurer.inair:
+                if pygame.key.get_pressed()[pygame.K_p]:
+                    for i in range(7):
+                        self.adventurer.airattack("LEFT")
+                        self.clock.tick(15)
+                        self.update_game()
+                    return None
+                self.adventurer.run("LEFT", slow=True)
+                self.adventurer.freefall()
                 self.update_game()
                 return None
+            elif pygame.key.get_pressed()[pygame.K_p]:
+                for i in range(6):
+                    self.clock.tick(15)
+                    self.adventurer.attack("LEFT")
+                    self.update_game()
             self.clock.tick(25)
             self.adventurer.run("LEFT")
             self.update_game()
+
         elif pygame.key.get_pressed()[pygame.K_RIGHT] or pygame.key.get_pressed()[pygame.K_d]:
-            if pygame.key.get_pressed()[pygame.K_SPACE]:
-                for i in range(6):
-                    self.clock.tick(15)
-                    self.adventurer.attack()
-                    self.update_game()
-            elif pygame.key.get_pressed()[pygame.K_UP] and not self.jumping:
-                self.adventurer.y -= 1
-                self.jumping = True
-            elif self.jumping:
-                self.jumping = self.adventurer.jump("RIGHT")
+            if self.adventurer.inair:
+                if pygame.key.get_pressed()[pygame.K_p]:
+                    for i in range(7):
+                        self.adventurer.airattack("RIGHT")
+                        self.clock.tick(15)
+                        self.update_game()
+                    return None
+                self.adventurer.run("RIGHT", slow=True)
+                self.adventurer.freefall()
                 self.update_game()
                 return None
+            elif pygame.key.get_pressed()[pygame.K_p]:
+                for i in range(6):
+                    self.clock.tick(15)
+                    self.adventurer.attack("RIGHT")
+                    self.update_game()
             self.adventurer.run("RIGHT")
             self.update_game()
             self.clock.tick(25)
-        elif pygame.key.get_pressed()[pygame.K_SPACE]:
+
+        elif self.adventurer.inair:
+            if pygame.key.get_pressed()[pygame.K_p]:
+                for i in range(7):
+                    self.adventurer.airattack()
+                    self.clock.tick(15)
+                    self.update_game()
+                return None
+            self.adventurer.freefall()
+            self.update_game()
+
+        elif pygame.key.get_pressed()[pygame.K_p]:
             for i in range(6):
                 self.adventurer.attack()
                 self.update_game()
                 self.clock.tick(15)
-        elif pygame.key.get_pressed()[pygame.K_UP] and not self.jumping:
-            self.adventurer.y -= 1
-            self.jumping = True
-        elif self.jumping:
-            self.jumping = self.adventurer.jump()
-            self.update_game()
         else:
             self.clock.tick(6)
             self.adventurer.rest()
@@ -107,8 +130,6 @@ class GameInstance(object):
 
     def game(self):
         running = True
-        pygame.key.set_repeat(1)
-        self.jumping = False
         self.adventurer.set_level(self.maps.sprites()[0])
         while running:
             for event in pygame.event.get():
