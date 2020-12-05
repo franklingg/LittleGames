@@ -1,5 +1,5 @@
 import pygame
-from .Settings import Screen
+from .Settings import Screen, Controls
 from Content import Assets
 from Object.Character import Character
 from Object import Maps
@@ -15,6 +15,7 @@ class GameInstance(object):
 
         self.home_screen()
 
+        self.controls = Controls()
         self.maps = pygame.sprite.Group(Maps.LevelOne())
         self.adventurer = Character(self.maps.sprites()[0])
         self.game()
@@ -50,76 +51,48 @@ class GameInstance(object):
             pygame.display.update()
 
     def player_action(self):
-        if pygame.key.get_pressed()[pygame.K_UP] and not self.adventurer.inair:
+        if pygame.key.get_pressed()[self.controls.jump] and not self.adventurer.inair:
             self.adventurer.jump()
 
-        elif pygame.key.get_pressed()[pygame.K_DOWN] or pygame.key.get_pressed()[pygame.K_s] \
+        if (pygame.key.get_pressed()[self.controls.crouch_arrow] or pygame.key.get_pressed()[self.controls.crouch_letter]) \
                 and not self.adventurer.inair:
-            self.clock.tick(10)
             self.adventurer.crouch()
-            self.update_game()
+            self.clock.tick(10)
 
-        elif pygame.key.get_pressed()[pygame.K_LEFT] or pygame.key.get_pressed()[pygame.K_a]:
+        if pygame.key.get_pressed()[self.controls.attack]:
             if self.adventurer.inair:
-                if pygame.key.get_pressed()[pygame.K_p]:
-                    for i in range(7):
-                        self.adventurer.airattack("LEFT")
-                        self.clock.tick(15)
-                        self.update_game()
-                    return None
-                self.adventurer.run("LEFT", slow=True)
-                self.adventurer.freefall()
-                self.update_game()
-                return None
-            elif pygame.key.get_pressed()[pygame.K_p]:
-                for i in range(6):
-                    self.clock.tick(15)
-                    self.adventurer.attack("LEFT")
-                    self.update_game()
-            self.clock.tick(25)
-            self.adventurer.run("LEFT")
-            self.update_game()
-
-        elif pygame.key.get_pressed()[pygame.K_RIGHT] or pygame.key.get_pressed()[pygame.K_d]:
-            if self.adventurer.inair:
-                if pygame.key.get_pressed()[pygame.K_p]:
-                    for i in range(7):
-                        self.adventurer.airattack("RIGHT")
-                        self.clock.tick(15)
-                        self.update_game()
-                    return None
-                self.adventurer.run("RIGHT", slow=True)
-                self.adventurer.freefall()
-                self.update_game()
-                return None
-            elif pygame.key.get_pressed()[pygame.K_p]:
-                for i in range(6):
-                    self.clock.tick(15)
-                    self.adventurer.attack("RIGHT")
-                    self.update_game()
-            self.adventurer.run("RIGHT")
-            self.update_game()
-            self.clock.tick(25)
-
-        elif self.adventurer.inair:
-            if pygame.key.get_pressed()[pygame.K_p]:
-                for i in range(7):
+                for i in range(3):
                     self.adventurer.airattack()
-                    self.clock.tick(15)
                     self.update_game()
-                return None
-            self.adventurer.freefall()
-            self.update_game()
-
-        elif pygame.key.get_pressed()[pygame.K_p]:
-            for i in range(6):
-                self.adventurer.attack()
-                self.update_game()
+                    self.clock.tick(10)
+            else:
+                for i in range(6):
+                    self.adventurer.attack()
+                    self.clock.tick(16)
+                    self.update_game()
+            self.adventurer.attacking = True
+        if pygame.key.get_pressed()[self.controls.run_right_arrow] or pygame.key.get_pressed()[self.controls.run_right_letter]:
+            if self.adventurer.attacking:
+                self.adventurer.move("RIGHT")
+            elif self.adventurer.inair:
+                self.adventurer.move("RIGHT", slow=True)
+            elif not self.adventurer.crouched:
+                self.adventurer.run("RIGHT")
                 self.clock.tick(15)
-        else:
+        if pygame.key.get_pressed()[self.controls.run_left_arrow] or pygame.key.get_pressed()[self.controls.run_left_letter]:
+            if self.adventurer.attacking:
+                self.adventurer.move("LEFT")
+            elif self.adventurer.inair:
+                self.adventurer.move("LEFT", slow=True)
+            elif not self.adventurer.crouched:
+                self.adventurer.run("LEFT")
+                self.clock.tick(15)
+        if self.adventurer.inair:
+            self.adventurer.freefall()
+        elif self.controls.nothing_pressed():
             self.clock.tick(6)
             self.adventurer.rest()
-            self.update_game()
+        self.update_game()
 
     def update_game(self):
         self.adventurer.update()

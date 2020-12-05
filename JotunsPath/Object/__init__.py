@@ -1,5 +1,6 @@
 import pygame.rect
 
+GRAVITY = -0.29
 
 class Animation(object):
 

@@ -1,5 +1,5 @@
 from Content import Assets
-from Object import Animation
+from Object import Animation, GRAVITY
 import pygame
 
 
@@ -22,27 +22,25 @@ class Character(pygame.sprite.GroupSingle):
         self.left = False
 
         self.speed = [20, 0]
-        self.gravity = -0.5
         self.inair = False
+        self.attacking = False
         self.crouched = False
 
         # character image (changes continuously)
         self.sprite = pygame.sprite.Sprite()
-        #self.rest()
-        #self.update()
+
 
     def set_level(self, level):
         # change the level
         self.level = level
 
-    def run(self, direction, slow=False):
+    def move(self, direction, slow=False):
         if direction == "RIGHT":
-            self.x = self.x + self.speed[0]*0.35 if slow else self.x + self.speed[0]
+            self.x = self.x + self.speed[0] * 0.19 if slow else self.x + self.speed[0]
             self.left = False
         elif direction == "LEFT":
-            self.x = self.x - self.speed[0]*0.35 if slow else self.x - self.speed[0]
+            self.x = self.x - self.speed[0] * 0.19 if slow else self.x - self.speed[0]
             self.left = True
-        animation = self.animations["RUN"].animate()
 
         for object in pygame.sprite.groupcollide(self, self.level.walls, False, False).items():
             for wall in object[1]:
@@ -50,32 +48,31 @@ class Character(pygame.sprite.GroupSingle):
                     if self.left and self.x - self.speed[0] <= wall.rect.x:
                         self.x = wall.rect.x
                     elif not self.left and self.x + self.sprite.rect.w + self.speed[0] >= wall.rect.x:
-                        print(wall)
                         self.x = wall.rect.x - self.sprite.rect.w
         if self.x < 0:
             self.x = 0
         if self.x + self.sprite.rect.w > self.level.x:
             self.x = self.level.x - self.sprite.rect.w
 
+    def run(self, direction, slow=False):
+        self.move(direction)
+        animation = self.animations["RUN"].animate()
         self.update_image(animation)
 
-    def attack(self, direction=None):
-        if direction is not None:
-            self.run(direction, slow=True)
+    def attack(self):
         animation = self.animations["ATTACK"].animate()
+        self.attacking = True
         self.update_image(animation)
 
-    def airattack(self, direction=None):
-        for i in range(3):
-            if direction is not None:
-                self.run(direction, slow=True)
+    def airattack(self):
+        for _ in range(5):
             self.freefall()
-            self.update()
         animation = self.animations["AIRATTACK"].animate()
+        self.attacking = True
         self.update_image(animation)
 
     def jump(self):
-        self.speed[1] = 12
+        self.speed[1] = 10.5
         self.inair = True
 
     def rest(self):
@@ -84,7 +81,7 @@ class Character(pygame.sprite.GroupSingle):
 
     def freefall(self):
         if self.inair:
-            self.speed[1] += self.gravity
+            self.speed[1] += GRAVITY
             self.y -= self.speed[1]
 
             animation = self.animations["JUMP"].animate()
@@ -92,6 +89,7 @@ class Character(pygame.sprite.GroupSingle):
 
     def crouch(self):
         animation = self.animations["CROUCH"].animate()
+        self.y += 15
         self.crouched = True
         self.update_image(animation)
 
@@ -99,25 +97,23 @@ class Character(pygame.sprite.GroupSingle):
         if self.left:
             animation["img"] = pygame.transform.flip(animation["img"], True, False)
 
-        if self.crouched:
-            self.y += 15
         self.sprite.image = animation["img"].subsurface(animation["crop"])
         self.sprite.rect = self.sprite.image.get_rect()
         self.sprite.rect.x, self.sprite.rect.y = self.x, self.y
 
     def update(self):
-        if self.crouched:
-            self.y -= 15
         collided = pygame.sprite.groupcollide(self, self.level.grounds, False, False)
-        if collided == {} and not self.crouched:
+        if not collided:
             self.inair = True
-            self.freefall()
         else:
             for object in pygame.sprite.groupcollide(self, self.level.grounds, False, False).items():
                 for ground in object[1]:
+                    if self.crouched:
+                        self.y -= 15
                     if self.inair and self.sprite.rect.bottom - self.speed[1] > ground.rect.y:
                         self.inair = False
                         self.speed[1] = 0
                         self.y = self.sprite.rect.top
+        self.attacking = False
         self.crouched = False
         self.add(self.sprite)
